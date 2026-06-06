@@ -3,8 +3,8 @@
   "launcher_version": "1.1.0",
   "download_url": "https://github.com/Realwaan/savyor/releases/download/v1.1.0/SavyorApp_1.1.0.zip",
   "launcher_download_url": "https://github.com/Realwaan/savyor/releases/download/v1.1.0/SavyorLauncher_1.1.0.zip",
-  "sha256": "916e8a6339daaa42f6643eeb9844b625cccfa0586edf76f2d6b464282128a7b9",
-  "launcher_sha256": "a0823096d74f5f1d98bbbf98bc4bcb18b69f1c779b18dc422d70194df99c3848",
+  "sha256": "137e643e3aa540fd6b70e456be8dfb1dd860c9290ad2acbdca504431b5fcbd2f",
+  "launcher_sha256": "a4a6dabf4cf93c07815b917f4717a2e7354da84a9b81d0d4ea72f5746c46a1ce",
   "required_files": [
     "SavyorApp.exe",
     "SavyorApp.dll",
