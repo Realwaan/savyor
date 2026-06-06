@@ -407,5 +407,112 @@ namespace SavyorApp
                 }
             }
         }
+
+        private void EditDetails_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedDoc == null) return;
+
+            // Fill input text fields
+            EditTitleInput.Text = _selectedDoc.Title;
+            EditDescriptionInput.Text = _selectedDoc.Description;
+            EditTagsInput.Text = string.Join(", ", _selectedDoc.Tags.Where(t => t != _selectedDoc.Extension.Replace(".", "").ToUpperInvariant()));
+
+            EditDialogOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void CloseEditDialog_Click(object sender, RoutedEventArgs e)
+        {
+            EditDialogOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void SaveEditedDocument_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedDoc == null) return;
+
+            if (string.IsNullOrWhiteSpace(EditTitleInput.Text))
+            {
+                MessageBox.Show("Please provide a title for the document.", "Title Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                // Parse tags
+                var tags = EditTagsInput.Text
+                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(t => t.Trim())
+                    .Where(t => !string.IsNullOrEmpty(t))
+                    .ToList();
+
+                // Add extension as a default category tag
+                string cleanExt = _selectedDoc.Extension.Replace(".", "").ToUpperInvariant();
+                if (!tags.Contains(cleanExt) && !string.IsNullOrEmpty(cleanExt))
+                {
+                    tags.Add(cleanExt);
+                }
+
+                // Update properties
+                _selectedDoc.Title = EditTitleInput.Text;
+                _selectedDoc.Description = EditDescriptionInput.Text;
+                _selectedDoc.Tags = tags;
+
+                SaveCatalog();
+
+                // Refresh UI labels in the viewer
+                ViewerDocTitle.Text = _selectedDoc.Title;
+
+                EditDialogOverlay.Visibility = Visibility.Collapsed;
+                RefreshDisplay();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to update document details: {ex.Message}", "Update Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void DeleteDocument_Click(object sender, RoutedEventArgs e)
+        {
+            if (_selectedDoc == null) return;
+
+            var result = MessageBox.Show(
+                $"Are you sure you want to permanently delete \"{_selectedDoc.Title}\" from the vault?\n\nThis will delete the file on disk as well.",
+                "Confirm Deletion",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    string filePath = Path.Combine(FilesDir, _selectedDoc.FileName);
+
+                    // Stop PDF playback or page loads by navigating away (since it locks the file)
+                    try
+                    {
+                        WebBrowserControl.Navigate("about:blank");
+                    }
+                    catch { }
+
+                    // Delete from filesystem
+                    if (File.Exists(filePath))
+                    {
+                        File.Delete(filePath);
+                    }
+
+                    // Remove from list and save
+                    _documents.Remove(_selectedDoc);
+                    SaveCatalog();
+
+                    // Hide viewer and refresh display
+                    ViewerOverlay.Visibility = Visibility.Collapsed;
+                    _selectedDoc = null;
+                    RefreshDisplay();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to delete document: {ex.Message}", "Delete Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
     }
 }

@@ -55,7 +55,7 @@ namespace SavyorLauncher
                     using var doc = System.Text.Json.JsonDocument.Parse(json);
                     if (doc.RootElement.TryGetProperty("manifest_url", out var prop))
                     {
-                        return prop.GetString() ?? "file:///f:/savyor/MockServer/manifest.json";
+                        return prop.GetString() ?? "https://raw.githubusercontent.com/Realwaan/savyor/master/manifest.json";
                     }
                 }
                 catch
@@ -63,7 +63,7 @@ namespace SavyorLauncher
                     // Fallback to default
                 }
             }
-            return "file:///f:/savyor/MockServer/manifest.json";
+            return "https://raw.githubusercontent.com/Realwaan/savyor/master/manifest.json";
         }
 
         private void SetStatus(string message, double progressVal)
@@ -211,6 +211,27 @@ namespace SavyorLauncher
                         VerifyAndLaunchExistingApp();
                         return;
                     }
+
+                    // Terminate running SavyorApp processes to prevent file lock errors during extraction
+                    try
+                    {
+                        var processes = Process.GetProcessesByName("SavyorApp");
+                        foreach (var proc in processes)
+                        {
+                            try
+                            {
+                                string? procPath = proc.MainModule?.FileName;
+                                if (!string.IsNullOrEmpty(procPath) && 
+                                    string.Equals(Path.GetDirectoryName(procPath), AppBaseDir, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    proc.Kill();
+                                    proc.WaitForExit(3000);
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                    catch { }
 
                     SetStatus("Extracting application components...", 90);
                     await Task.Run(() => _updateService.ExtractZipSafely(appZipPath, AppBaseDir));

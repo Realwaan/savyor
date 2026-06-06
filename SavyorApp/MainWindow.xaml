@@ -75,6 +75,44 @@
             </Setter>
         </Style>
 
+        <!-- Premium RadioButton Menu style with left indicator line for categories -->
+        <Style x:Key="SidebarRadioButton" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#64748b"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Margin" Value="0,3,0,3"/>
+            <Setter Property="Padding" Value="15,0,0,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border Name="border" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Name="indicator" Grid.Column="0" Background="Transparent" CornerRadius="2" Width="4" Height="18" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                <ContentPresenter Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="12,0,0,0"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#111827"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="indicator" Property="Background" Value="#8b5cf6"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Background" Value="#111827"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="indicator" Property="Background" Value="#8b5cf6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Action Buttons with Gradient and Glow -->
         <Style x:Key="GradientButton" TargetType="Button">
             <Setter Property="Foreground" Value="White"/>
@@ -125,10 +163,16 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
-                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                        <Border Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <Grid>
+                                <TextBlock Name="placeholder" Text="{TemplateBinding Tag}" Foreground="#475569" IsHitTestVisible="False" VerticalAlignment="Top" Visibility="Collapsed"/>
+                                <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                            </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
+                            <Trigger Property="Text" Value="">
+                                <Setter TargetName="placeholder" Property="Visibility" Value="Visible"/>
+                            </Trigger>
                             <Trigger Property="IsFocused" Value="True">
                                 <Setter Property="BorderBrush" Value="#8b5cf6"/>
                                 <Setter Property="Background" Value="#111827"/>
@@ -230,17 +274,17 @@
 
                         <!-- Search Box inside custom textbox style -->
                         <TextBox Grid.Row="0" x:Name="SearchBox" Margin="18,18,18,10" Style="{StaticResource ModernTextBox}" 
-                                 TextChanged="SearchBox_TextChanged" Tag="Search Box"/>
+                                 TextChanged="SearchBox_TextChanged" Tag="Search documents..."/>
 
                         <!-- Categories Sidebar list -->
                         <StackPanel Grid.Row="1" Margin="12,10,12,0">
                             <TextBlock Text="CATEGORIES" Foreground="#475569" FontSize="9" FontWeight="Bold" Margin="15,10,0,10"/>
-                            <Button Style="{StaticResource SidebarButton}" Click="FilterCategory_Click" Tag="All">All Documents</Button>
-                            <Button Style="{StaticResource SidebarButton}" Click="FilterCategory_Click" Tag="pdf">PDF Reader</Button>
-                            <Button Style="{StaticResource SidebarButton}" Click="FilterCategory_Click" Tag="docx">Word Files</Button>
-                            <Button Style="{StaticResource SidebarButton}" Click="FilterCategory_Click" Tag="pptx">PowerPoints</Button>
-                            <Button Style="{StaticResource SidebarButton}" Click="FilterCategory_Click" Tag="images">Image Gallery</Button>
-                            <Button Style="{StaticResource SidebarButton}" Click="FilterCategory_Click" Tag="text">Text &amp; Markdown</Button>
+                            <RadioButton Style="{StaticResource SidebarRadioButton}" GroupName="CategoryGroup" IsChecked="True" Click="FilterCategory_Click" Tag="All">All Documents</RadioButton>
+                            <RadioButton Style="{StaticResource SidebarRadioButton}" GroupName="CategoryGroup" Click="FilterCategory_Click" Tag="pdf">PDF Reader</RadioButton>
+                            <RadioButton Style="{StaticResource SidebarRadioButton}" GroupName="CategoryGroup" Click="FilterCategory_Click" Tag="docx">Word Files</RadioButton>
+                            <RadioButton Style="{StaticResource SidebarRadioButton}" GroupName="CategoryGroup" Click="FilterCategory_Click" Tag="pptx">PowerPoints</RadioButton>
+                            <RadioButton Style="{StaticResource SidebarRadioButton}" GroupName="CategoryGroup" Click="FilterCategory_Click" Tag="images">Image Gallery</RadioButton>
+                            <RadioButton Style="{StaticResource SidebarRadioButton}" GroupName="CategoryGroup" Click="FilterCategory_Click" Tag="text">Text &amp; Markdown</RadioButton>
                             
                             <TextBlock Text="VAULT STATS" Foreground="#475569" FontSize="9" FontWeight="Bold" Margin="15,30,0,10"/>
                             <Border Margin="8,0,8,0" Background="#05080f" CornerRadius="8" Padding="12,10,12,10" BorderThickness="1" BorderBrush="#1a334155">
@@ -374,6 +418,8 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
                                         <!-- Document Details -->
@@ -382,11 +428,17 @@
                                             <TextBlock x:Name="ViewerDocPath" Text="C:\docs\readme.txt" Foreground="#475569" FontSize="10" TextTrimming="CharacterEllipsis"/>
                                         </StackPanel>
 
+                                        <!-- Edit Details -->
+                                        <Button Grid.Column="1" Content="✎ Edit Details" Style="{StaticResource SidebarButton}" Foreground="#3b82f6" FontWeight="SemiBold" Padding="12,0,12,0" Margin="0,0,10,0" Click="EditDetails_Click"/>
+
+                                        <!-- Delete Document -->
+                                        <Button Grid.Column="2" Content="🗑 Delete" Style="{StaticResource SidebarButton}" Foreground="#ef4444" FontWeight="SemiBold" Padding="12,0,12,0" Margin="0,0,10,0" Click="DeleteDocument_Click"/>
+
                                         <!-- Launch Externally -->
-                                        <Button Grid.Column="1" Content="Open in System App" Style="{StaticResource SidebarButton}" Foreground="#8b5cf6" FontWeight="SemiBold" Padding="12,0,12,0" Margin="0,0,10,0" Click="OpenExternally_Click"/>
+                                        <Button Grid.Column="3" Content="Open in System App" Style="{StaticResource SidebarButton}" Foreground="#8b5cf6" FontWeight="SemiBold" Padding="12,0,12,0" Margin="0,0,10,0" Click="OpenExternally_Click"/>
                                         
                                         <!-- Close Viewer -->
-                                        <Button Grid.Column="2" Content="✕ Close" Style="{StaticResource SidebarButton}" Foreground="#ef4444" Padding="12,0,12,0" Click="CloseViewer_Click"/>
+                                        <Button Grid.Column="4" Content="✕ Close" Style="{StaticResource SidebarButton}" Foreground="#94a3b8" Padding="12,0,12,0" Click="CloseViewer_Click"/>
                                     </Grid>
                                 </Border>
 
@@ -462,21 +514,61 @@
 
                                     <!-- Title -->
                                     <TextBlock Text="DOCUMENT TITLE" Foreground="#475569" FontSize="9" FontWeight="Bold" Margin="0,0,0,6"/>
-                                    <TextBox x:Name="DocTitleInput" Style="{StaticResource ModernTextBox}" Margin="0,0,0,18"/>
+                                    <TextBox x:Name="DocTitleInput" Style="{StaticResource ModernTextBox}" Margin="0,0,0,18" Tag="Enter document title..."/>
 
                                     <!-- Description -->
                                     <TextBlock Text="DESCRIPTION (OPTIONAL)" Foreground="#475569" FontSize="9" FontWeight="Bold" Margin="0,0,0,6"/>
-                                    <TextBox x:Name="DocDescriptionInput" Style="{StaticResource ModernTextBox}" Height="60" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,18"/>
+                                    <TextBox x:Name="DocDescriptionInput" Style="{StaticResource ModernTextBox}" Height="60" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,18" Tag="Enter optional description..."/>
 
                                     <!-- Tags -->
                                     <TextBlock Text="TAGS (COMMA SEPARATED)" Foreground="#475569" FontSize="9" FontWeight="Bold" Margin="0,0,0,6"/>
-                                    <TextBox x:Name="DocTagsInput" Style="{StaticResource ModernTextBox}"/>
+                                    <TextBox x:Name="DocTagsInput" Style="{StaticResource ModernTextBox}" Tag="Enter tags (e.g. Finance, Report, 2026)..."/>
                                 </StackPanel>
 
                                 <!-- Dialog Action Buttons -->
                                 <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
                                     <Button Content="Cancel" Style="{StaticResource SidebarButton}" Margin="0,0,12,0" Padding="15,5,15,5" Click="CloseImportDialog_Click"/>
                                     <Button Content="Import Document" Style="{StaticResource GradientButton}" Click="SaveImportedDocument_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- Overlay: EDIT DOCUMENT DIALOG BOX (Translucent Overlay) -->
+                    <Grid Grid.Row="0" Grid.RowSpan="2" x:Name="EditDialogOverlay" Visibility="Collapsed" Background="#b0020308">
+                        <Border Width="460" Height="360" Background="#cc0f172a" BorderBrush="#1a334155" BorderThickness="1.5" CornerRadius="16" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#000" BlurRadius="25" Opacity="0.5"/>
+                            </Border.Effect>
+                            <Grid Margin="30">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Header -->
+                                <TextBlock Grid.Row="0" Text="Edit Document Details" Foreground="White" FontSize="18" FontWeight="Bold"/>
+
+                                <!-- Fields -->
+                                <StackPanel Grid.Row="1" Margin="0,20,0,0">
+                                    <!-- Title -->
+                                    <TextBlock Text="DOCUMENT TITLE" Foreground="#475569" FontSize="9" FontWeight="Bold" Margin="0,0,0,6"/>
+                                    <TextBox x:Name="EditTitleInput" Style="{StaticResource ModernTextBox}" Margin="0,0,0,18" Tag="Enter document title..."/>
+
+                                    <!-- Description -->
+                                    <TextBlock Text="DESCRIPTION (OPTIONAL)" Foreground="#475569" FontSize="9" FontWeight="Bold" Margin="0,0,0,6"/>
+                                    <TextBox x:Name="EditDescriptionInput" Style="{StaticResource ModernTextBox}" Height="60" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,18" Tag="Enter optional description..."/>
+
+                                    <!-- Tags -->
+                                    <TextBlock Text="TAGS (COMMA SEPARATED)" Foreground="#475569" FontSize="9" FontWeight="Bold" Margin="0,0,0,6"/>
+                                    <TextBox x:Name="EditTagsInput" Style="{StaticResource ModernTextBox}" Tag="Enter tags (e.g. Finance, Report, 2026)..."/>
+                                </StackPanel>
+
+                                <!-- Dialog Action Buttons -->
+                                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                                    <Button Content="Cancel" Style="{StaticResource SidebarButton}" Margin="0,0,12,0" Padding="15,5,15,5" Click="CloseEditDialog_Click"/>
+                                    <Button Content="Save Changes" Style="{StaticResource GradientButton}" Click="SaveEditedDocument_Click"/>
                                 </StackPanel>
                             </Grid>
                         </Border>

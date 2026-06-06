@@ -50,7 +50,7 @@ namespace SavyorLauncher.Services
                 version.LastUpdated = DateTime.UtcNow;
                 string json = JsonSerializer.Serialize(version, new JsonSerializerOptions { WriteIndented = true });
                 
-                string dir = Path.GetDirectoryName(_localVersionPath);
+                string? dir = Path.GetDirectoryName(_localVersionPath);
                 if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 {
                     Directory.CreateDirectory(dir);
