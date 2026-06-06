@@ -123,6 +123,28 @@
             </Setter>
         </Style>
 
+        <!-- Premium Text Action Button style for headers and details -->
+        <Style x:Key="TextActionButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="14,0,14,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Name="border" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1a334155"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Action Buttons with Gradient and Glow -->
         <Style x:Key="GradientButton" TargetType="Button">
             <Setter Property="Foreground" Value="White"/>
@@ -439,16 +461,16 @@
                                         </StackPanel>
 
                                         <!-- Edit Details -->
-                                        <Button Grid.Column="1" Content="✎ Edit Details" Style="{StaticResource SidebarButton}" Foreground="#3b82f6" FontWeight="SemiBold" Padding="12,0,12,0" Margin="0,0,10,0" Click="EditDetails_Click"/>
+                                        <Button Grid.Column="1" Content="✎ Edit Details" Style="{StaticResource TextActionButton}" Foreground="#3b82f6" FontWeight="SemiBold" Padding="12,0,12,0" Margin="0,0,10,0" Click="EditDetails_Click"/>
 
                                         <!-- Delete Document -->
-                                        <Button Grid.Column="2" Content="🗑 Delete" Style="{StaticResource SidebarButton}" Foreground="#ef4444" FontWeight="SemiBold" Padding="12,0,12,0" Margin="0,0,10,0" Click="DeleteDocument_Click"/>
+                                        <Button Grid.Column="2" Content="🗑 Delete" Style="{StaticResource TextActionButton}" Foreground="#ef4444" FontWeight="SemiBold" Padding="12,0,12,0" Margin="0,0,10,0" Click="DeleteDocument_Click"/>
 
                                         <!-- Launch Externally -->
-                                        <Button Grid.Column="3" Content="Open in System App" Style="{StaticResource SidebarButton}" Foreground="#8b5cf6" FontWeight="SemiBold" Padding="12,0,12,0" Margin="0,0,10,0" Click="OpenExternally_Click"/>
+                                        <Button Grid.Column="3" Content="Open in System App" Style="{StaticResource TextActionButton}" Foreground="#8b5cf6" FontWeight="SemiBold" Padding="12,0,12,0" Margin="0,0,10,0" Click="OpenExternally_Click"/>
                                         
                                         <!-- Close Viewer -->
-                                        <Button Grid.Column="4" Content="✕ Close" Style="{StaticResource SidebarButton}" Foreground="#94a3b8" Padding="12,0,12,0" Click="CloseViewer_Click"/>
+                                        <Button Grid.Column="4" Content="✕ Close" Style="{StaticResource TextActionButton}" Foreground="#94a3b8" Padding="12,0,12,0" Click="CloseViewer_Click"/>
                                     </Grid>
                                 </Border>
 
@@ -537,7 +559,7 @@
 
                                 <!-- Dialog Action Buttons -->
                                 <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-                                    <Button Content="Cancel" Style="{StaticResource SidebarButton}" Margin="0,0,12,0" Padding="15,5,15,5" Click="CloseImportDialog_Click"/>
+                                    <Button Content="Cancel" Style="{StaticResource TextActionButton}" Foreground="#94a3b8" Margin="0,0,12,0" Padding="15,5,15,5" Click="CloseImportDialog_Click"/>
                                     <Button Content="Import Document" Style="{StaticResource GradientButton}" Click="SaveImportedDocument_Click"/>
                                 </StackPanel>
                             </Grid>
@@ -577,7 +599,7 @@
 
                                 <!-- Dialog Action Buttons -->
                                 <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-                                    <Button Content="Cancel" Style="{StaticResource SidebarButton}" Margin="0,0,12,0" Padding="15,5,15,5" Click="CloseEditDialog_Click"/>
+                                    <Button Content="Cancel" Style="{StaticResource TextActionButton}" Foreground="#94a3b8" Margin="0,0,12,0" Padding="15,5,15,5" Click="CloseEditDialog_Click"/>
                                     <Button Content="Save Changes" Style="{StaticResource GradientButton}" Click="SaveEditedDocument_Click"/>
                                 </StackPanel>
                             </Grid>
