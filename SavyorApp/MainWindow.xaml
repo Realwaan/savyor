@@ -497,6 +497,17 @@
                                     <Border x:Name="WebPreviewer" Background="White" CornerRadius="8" BorderThickness="1" BorderBrush="#1a334155" Visibility="Collapsed">
                                         <WebBrowser x:Name="WebBrowserControl"/>
                                     </Border>
+
+                                    <!-- PDF Details Mode (Fallback for systems without IE PDF plugins) -->
+                                    <Grid x:Name="PdfPreviewer" Visibility="Collapsed">
+                                        <Border Background="#151e2e" CornerRadius="12" Padding="40" VerticalAlignment="Center" HorizontalAlignment="Center" BorderBrush="#1a334155" BorderThickness="1.5">
+                                            <StackPanel HorizontalAlignment="Center">
+                                                <TextBlock Text="PDF Document Vault Storage" Foreground="White" FontSize="17" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="To view this PDF document, click below to open it securely in your default system reader (such as Microsoft Edge or Adobe Acrobat)." Foreground="#64748b" FontSize="12" Margin="0,10,0,25" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="350"/>
+                                                <Button Content="Open PDF in System App" Style="{StaticResource GradientButton}" Click="OpenExternally_Click" HorizontalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
                                     
                                     <!-- Binary Details Mode (Fallback) -->
                                     <Grid x:Name="BinaryPreviewer" Visibility="Collapsed">

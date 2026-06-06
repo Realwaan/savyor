@@ -322,6 +322,7 @@ namespace SavyorApp
             ImagePreviewer.Visibility = Visibility.Collapsed;
             TextPreviewer.Visibility = Visibility.Collapsed;
             WebPreviewer.Visibility = Visibility.Collapsed;
+            PdfPreviewer.Visibility = Visibility.Collapsed;
             BinaryPreviewer.Visibility = Visibility.Collapsed;
 
             string category = MapCategory(doc.Extension);
@@ -355,9 +356,8 @@ namespace SavyorApp
                 }
                 else if (category == "pdf")
                 {
-                    // Navigate native WebBrowser to PDF file path
-                    WebBrowserControl.Navigate(new Uri(filePath));
-                    WebPreviewer.Visibility = Visibility.Visible;
+                    // Show a dedicated PDF message with a direct open button
+                    PdfPreviewer.Visibility = Visibility.Visible;
                 }
                 else
                 {
