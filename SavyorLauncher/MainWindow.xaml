@@ -9,6 +9,17 @@
         AllowsTransparency="True"
         Background="Transparent"
         ResizeMode="NoResize">
+
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Window.Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.45"/>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </Window.Triggers>
+
     <Window.Resources>
         <!-- Custom Progress Bar Style -->
         <Style x:Key="ModernProgressBar" TargetType="ProgressBar">
@@ -35,7 +46,13 @@
         </Style>
     </Window.Resources>
     
-    <Border CornerRadius="12" Background="#090d16" BorderBrush="#1e293b" BorderThickness="1.5">
+    <Border CornerRadius="12" BorderBrush="#1e293b" BorderThickness="1.5">
+        <Border.Background>
+            <RadialGradientBrush Center="0.5,0.4" RadiusX="0.95" RadiusY="0.95">
+                <GradientStop Color="#16143c" Offset="0"/>
+                <GradientStop Color="#020308" Offset="1"/>
+            </RadialGradientBrush>
+        </Border.Background>
         <Border.Effect>
             <DropShadowEffect Color="#000000" BlurRadius="20" ShadowDepth="3" Opacity="0.6"/>
         </Border.Effect>
@@ -46,7 +63,7 @@
             </Grid.RowDefinitions>
 
             <!-- Custom Title Bar -->
-            <Grid Grid.Row="0" Background="#0f172a" MouseDown="TitleBar_MouseDown">
+            <Grid Grid.Row="0" Background="#bb090d16" MouseDown="TitleBar_MouseDown">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="32"/>
