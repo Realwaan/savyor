@@ -1,0 +1,35 @@
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Re]leases/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+build/
+bin/
+obj/
+
+## Visual Studio Cache/Options
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.suo
+
+## Rider
+.idea/
+
+## OS Files
+.DS_Store
+Thumbs.db

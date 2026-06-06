@@ -1,0 +1,488 @@
+<Window x:Class="SavyorApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:SavyorApp.Converters"
+        Title="Savyor Desktop Document Vault" 
+        Height="700" 
+        Width="1120"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="CanResizeWithGrip">
+    
+    <Window.Resources>
+        <!-- Registered Custom Converters -->
+        <converters:ExtensionToColorConverter x:Key="ExtensionToColorConverter"/>
+        <converters:SizeFormatterConverter x:Key="SizeFormatterConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <!-- Custom Scrollbar Design -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid>
+                            <Track Name="PART_Track" IsDirectionReversed="true">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border CornerRadius="4" Background="#334155" Margin="1,0,1,0"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Premium Menu button style with left indicator line -->
+        <Style x:Key="SidebarButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#64748b"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Margin" Value="0,3,0,3"/>
+            <Setter Property="Padding" Value="15,0,0,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Name="border" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Name="indicator" Grid.Column="0" Background="Transparent" CornerRadius="2" Width="4" Height="18" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                <ContentPresenter Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="12,0,0,0"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#111827"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="indicator" Property="Background" Value="#8b5cf6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Action Buttons with Gradient and Glow -->
+        <Style x:Key="GradientButton" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="18,10,18,10"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Name="bg" CornerRadius="8">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#8b5cf6" Offset="0"/>
+                                    <GradientStop Color="#3b82f6" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <Border.Effect>
+                                <DropShadowEffect Color="#8b5cf6" BlurRadius="10" ShadowDepth="0" Opacity="0.3"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bg" Property="Opacity" Value="0.9"/>
+                                <Setter TargetName="bg" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#8b5cf6" BlurRadius="15" ShadowDepth="0" Opacity="0.5"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bg" Property="Background" Value="#475569"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Premium Input TextBox Style -->
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#090d16"/>
+            <Setter Property="BorderBrush" Value="#334155"/>
+            <Setter Property="BorderThickness" Value="1.2"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="CaretBrush" Value="White"/>
+            <Setter Property="Padding" Value="12,10,12,10"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#8b5cf6"/>
+                                <Setter Property="Background" Value="#111827"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#8b5cf6" BlurRadius="12" ShadowDepth="0" Opacity="0.4"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!-- Main Outer Window Border with Radial Ambient Background Glow -->
+    <Border CornerRadius="16" BorderBrush="#1a334155" BorderThickness="1.5">
+        <Border.Background>
+            <RadialGradientBrush Center="0.5,0.4" RadiusX="0.95" RadiusY="0.95">
+                <GradientStop Color="#16143c" Offset="0"/>
+                <GradientStop Color="#020308" Offset="1"/>
+            </RadialGradientBrush>
+        </Border.Background>
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" BlurRadius="35" ShadowDepth="6" Opacity="0.75"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Custom Title Bar -->
+            <Grid Grid.Row="0" Background="#bb090d16" MouseDown="TitleBar_MouseDown">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="120"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Branding Logo -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,0,0">
+                    <!-- Glowing Indicator Dot -->
+                    <Grid Width="8" Height="8" Margin="0,1,0,0">
+                        <Ellipse Fill="#8b5cf6"/>
+                        <Ellipse Fill="#3b82f6" Opacity="0.6">
+                            <Ellipse.Effect>
+                                <BlurEffect Radius="6"/>
+                            </Ellipse.Effect>
+                        </Ellipse>
+                    </Grid>
+                    <TextBlock Text="SAVYOR" Foreground="White" FontWeight="Bold" FontSize="11" Margin="10,0,0,0"/>
+                    <TextBlock Text="Vault" Foreground="#475569" FontSize="10" Margin="6,0,0,0"/>
+                </StackPanel>
+
+                <!-- Window Control Buttons -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Width="40" Height="40" Content="—" Foreground="#64748b" Background="Transparent" BorderThickness="0" Click="MinimizeButton_Click"/>
+                    <Button Width="40" Height="40" Content="▢" Foreground="#64748b" Background="Transparent" BorderThickness="0" Click="MaximizeButton_Click"/>
+                    <Button Width="40" Height="40" Content="✕" Foreground="#64748b" Background="Transparent" BorderThickness="0" Click="CloseButton_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Name="bg" Background="Transparent" CornerRadius="0,16,0,0">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="bg" Property="Background" Value="#ef4444"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- Main Application Layout Workspace -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="230"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Sidebar (Glassmorphic Dark Left Panel) -->
+                <Border Grid.Column="0" Background="#bb04060b" BorderBrush="#1a334155" BorderThickness="0,0,1,0" CornerRadius="0,0,0,16">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Search Box inside custom textbox style -->
+                        <TextBox Grid.Row="0" x:Name="SearchBox" Margin="18,18,18,10" Style="{StaticResource ModernTextBox}" 
+                                 TextChanged="SearchBox_TextChanged" Tag="Search Box"/>
+
+                        <!-- Categories Sidebar list -->
+                        <StackPanel Grid.Row="1" Margin="12,10,12,0">
+                            <TextBlock Text="CATEGORIES" Foreground="#475569" FontSize="9" FontWeight="Bold" Margin="15,10,0,10"/>
+                            <Button Style="{StaticResource SidebarButton}" Click="FilterCategory_Click" Tag="All">All Documents</Button>
+                            <Button Style="{StaticResource SidebarButton}" Click="FilterCategory_Click" Tag="pdf">PDF Reader</Button>
+                            <Button Style="{StaticResource SidebarButton}" Click="FilterCategory_Click" Tag="docx">Word Files</Button>
+                            <Button Style="{StaticResource SidebarButton}" Click="FilterCategory_Click" Tag="pptx">PowerPoints</Button>
+                            <Button Style="{StaticResource SidebarButton}" Click="FilterCategory_Click" Tag="images">Image Gallery</Button>
+                            <Button Style="{StaticResource SidebarButton}" Click="FilterCategory_Click" Tag="text">Text &amp; Markdown</Button>
+                            
+                            <TextBlock Text="VAULT STATS" Foreground="#475569" FontSize="9" FontWeight="Bold" Margin="15,30,0,10"/>
+                            <Border Margin="8,0,8,0" Background="#05080f" CornerRadius="8" Padding="12,10,12,10" BorderThickness="1" BorderBrush="#1a334155">
+                                <StackPanel>
+                                    <TextBlock x:Name="TotalFilesText" Text="Total Files: 0" Foreground="#94a3b8" FontSize="11" Margin="0,2,0,4" FontWeight="SemiBold"/>
+                                    <TextBlock x:Name="VaultSizeText" Text="Vault Size: 0 KB" Foreground="#64748b" FontSize="11" Margin="0,2,0,2"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                        
+                        <!-- Version Footer info -->
+                        <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="#1a334155" Padding="20,18,20,18" Background="#05080f" CornerRadius="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="SAVYOR DESKTOP" Foreground="#cbd5e1" FontSize="10" FontWeight="Bold"/>
+                                <TextBlock x:Name="LocalVerLabel" Text="App: v1.0.0" Foreground="#64748b" FontSize="9" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Right Workspace Panel (Frosted Glass Main Panel) -->
+                <Grid Grid.Column="1" Background="#660f172a">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="75"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header Section -->
+                    <Grid Grid.Row="0" Margin="30,0,30,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel VerticalAlignment="Center" Grid.Column="0">
+                            <TextBlock x:Name="SectionTitleText" Text="All Documents" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                            <TextBlock Text="Manage, search and preview your secure storage documents" Foreground="#64748b" FontSize="11" Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="1" Content="+ Import File" Style="{StaticResource GradientButton}" VerticalAlignment="Center" Click="ImportFile_Click"/>
+                    </Grid>
+
+                    <!-- Document Cards List Grid with smooth scaling animations on hover -->
+                    <ScrollViewer Grid.Row="1" Margin="30,5,30,30" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="DocumentsList">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <!-- Document Card with 3D Hover Scale and Glowing drop-shadows -->
+                                    <Border Width="175" Height="205" Margin="0,0,18,18" CornerRadius="12" Cursor="Hand" MouseDown="DocumentCard_MouseDown" RenderTransformOrigin="0.5,0.5">
+                                        <Border.RenderTransform>
+                                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                        </Border.RenderTransform>
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="#151e2e"/>
+                                                <Setter Property="BorderBrush" Value="#1a334155"/>
+                                                <Setter Property="BorderThickness" Value="1.5"/>
+                                                <Setter Property="Effect">
+                                                    <Setter.Value>
+                                                        <DropShadowEffect Color="#000000" BlurRadius="12" ShadowDepth="2" Opacity="0.4"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="BorderBrush" Value="#8b5cf6"/>
+                                                        <Setter Property="Background" Value="#1e293b"/>
+                                                        <Setter Property="RenderTransform">
+                                                            <Setter.Value>
+                                                                <ScaleTransform ScaleX="1.03" ScaleY="1.03"/>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                        <Setter Property="Effect">
+                                                            <Setter.Value>
+                                                                <DropShadowEffect Color="#8b5cf6" BlurRadius="18" ShadowDepth="0" Opacity="0.45"/>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Grid Margin="15">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- File Extension Tag Badge -->
+                                            <Border Grid.Row="0" HorizontalAlignment="Left" CornerRadius="6" Padding="8,4,8,4" VerticalAlignment="Top"
+                                                    Background="{Binding Extension, Converter={StaticResource ExtensionToColorConverter}}">
+                                                <TextBlock Text="{Binding Extension}" Foreground="White" FontSize="9" FontWeight="Bold"/>
+                                            </Border>
+
+                                            <!-- Title & Description -->
+                                            <StackPanel Grid.Row="1" Margin="0,15,0,0">
+                                                <TextBlock Text="{Binding Title}" Foreground="White" FontWeight="Bold" FontSize="13" MaxHeight="42" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding Description}" Foreground="#475569" FontSize="11" Margin="0,6,0,0" Height="40" TextTrimming="CharacterEllipsis" TextWrapping="Wrap"/>
+                                            </StackPanel>
+
+                                            <!-- Meta sizing info -->
+                                            <Grid Grid.Row="2" Margin="0,10,0,0">
+                                                <TextBlock Text="{Binding SizeBytes, Converter={StaticResource SizeFormatterConverter}}" Foreground="#64748b" FontSize="10" HorizontalAlignment="Left"/>
+                                                <TextBlock Text="{Binding DateAdded, StringFormat={}{0:MM/dd/yy}}" Foreground="#64748b" FontSize="10" HorizontalAlignment="Right"/>
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <!-- Overlay: SLIDEOUT DOCUMENT READER / VIEWER (Semi-transparent Backdrop layer) -->
+                    <Grid Grid.Row="0" Grid.RowSpan="2" x:Name="ViewerOverlay" Visibility="Collapsed" Background="#aa020308">
+                        <!-- Drawer Panel -->
+                        <Border Grid.Column="1" HorizontalAlignment="Right" Width="720" Background="#cc0f172a" BorderBrush="#1a334155" BorderThickness="1.5,0,0,0" CornerRadius="16,0,0,16">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="65"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Viewer Header -->
+                                <Border Grid.Row="0" Background="#dd090d16" Padding="25,0,25,0" CornerRadius="16,0,0,0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Document Details -->
+                                        <StackPanel VerticalAlignment="Center" Grid.Column="0">
+                                            <TextBlock x:Name="ViewerDocTitle" Text="Document Preview" Foreground="White" FontSize="16" FontWeight="Bold"/>
+                                            <TextBlock x:Name="ViewerDocPath" Text="C:\docs\readme.txt" Foreground="#475569" FontSize="10" TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+
+                                        <!-- Launch Externally -->
+                                        <Button Grid.Column="1" Content="Open in System App" Style="{StaticResource SidebarButton}" Foreground="#8b5cf6" FontWeight="SemiBold" Padding="12,0,12,0" Margin="0,0,10,0" Click="OpenExternally_Click"/>
+                                        
+                                        <!-- Close Viewer -->
+                                        <Button Grid.Column="2" Content="✕ Close" Style="{StaticResource SidebarButton}" Foreground="#ef4444" Padding="12,0,12,0" Click="CloseViewer_Click"/>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Preview Area -->
+                                <Grid Grid.Row="1" x:Name="ViewerContentGrid" Margin="25">
+                                    <!-- Content View Switcher -->
+                                    
+                                    <!-- Image Mode -->
+                                    <ScrollViewer x:Name="ImagePreviewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                                        <Image x:Name="ImageViewerControl" Stretch="Uniform" Margin="10">
+                                            <Image.Effect>
+                                                <DropShadowEffect Color="#000" BlurRadius="15" Opacity="0.5"/>
+                                            </Image.Effect>
+                                        </Image>
+                                    </ScrollViewer>
+
+                                    <!-- Text Mode -->
+                                    <Border x:Name="TextPreviewer" Background="#090d16" BorderBrush="#1a334155" BorderThickness="1.2" CornerRadius="8" Visibility="Collapsed">
+                                        <TextBox x:Name="TextViewerControl" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Background="Transparent" 
+                                                 BorderThickness="0" Foreground="#cbd5e1" Padding="20" FontSize="13" FontFamily="Consolas" ScrollViewer.VerticalScrollBarVisibility="Auto" CaretBrush="White"/>
+                                    </Border>
+
+                                    <!-- Web/PDF Mode -->
+                                    <Border x:Name="WebPreviewer" Background="White" CornerRadius="8" BorderThickness="1" BorderBrush="#1a334155" Visibility="Collapsed">
+                                        <WebBrowser x:Name="WebBrowserControl"/>
+                                    </Border>
+                                    
+                                    <!-- Binary Details Mode (Fallback) -->
+                                    <Grid x:Name="BinaryPreviewer" Visibility="Collapsed">
+                                        <Border Background="#151e2e" CornerRadius="12" Padding="40" VerticalAlignment="Center" HorizontalAlignment="Center" BorderBrush="#1a334155" BorderThickness="1.5">
+                                            <StackPanel HorizontalAlignment="Center">
+                                                <TextBlock Text="No Inline Preview Available" Foreground="White" FontSize="17" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="This format cannot be previewed directly. You can launch it using your local system viewer." Foreground="#64748b" FontSize="12" Margin="0,10,0,25" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="350"/>
+                                                <Button Content="Open File on System" Style="{StaticResource GradientButton}" Click="OpenExternally_Click" HorizontalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- Overlay: IMPORT DOCUMENT DIALOG BOX (Translucent Overlay) -->
+                    <Grid Grid.Row="0" Grid.RowSpan="2" x:Name="ImportDialogOverlay" Visibility="Collapsed" Background="#b0020308">
+                        <Border Width="460" Height="430" Background="#cc0f172a" BorderBrush="#1a334155" BorderThickness="1.5" CornerRadius="16" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#000" BlurRadius="25" Opacity="0.5"/>
+                            </Border.Effect>
+                            <Grid Margin="30">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Header -->
+                                <TextBlock Grid.Row="0" Text="Import Document" Foreground="White" FontSize="18" FontWeight="Bold"/>
+
+                                <!-- Fields -->
+                                <StackPanel Grid.Row="1" Margin="0,20,0,0">
+                                    <!-- Browse File -->
+                                    <TextBlock Text="DOCUMENT SOURCE" Foreground="#475569" FontSize="9" FontWeight="Bold" Margin="0,0,0,6"/>
+                                    <Grid Margin="0,0,0,18">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border BorderThickness="1.2" BorderBrush="#334155" Background="#090d16" CornerRadius="8" Grid.Column="0">
+                                            <TextBlock x:Name="SelectedFilePathText" Text="No file selected..." Foreground="#475569" VerticalAlignment="Center" Padding="12,8,12,8" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                        </Border>
+                                        <Button Grid.Column="1" Content="Browse" Style="{StaticResource GradientButton}" Height="36" Margin="10,0,0,0" Padding="18,0,18,0" Click="BrowseFile_Click"/>
+                                    </Grid>
+
+                                    <!-- Title -->
+                                    <TextBlock Text="DOCUMENT TITLE" Foreground="#475569" FontSize="9" FontWeight="Bold" Margin="0,0,0,6"/>
+                                    <TextBox x:Name="DocTitleInput" Style="{StaticResource ModernTextBox}" Margin="0,0,0,18"/>
+
+                                    <!-- Description -->
+                                    <TextBlock Text="DESCRIPTION (OPTIONAL)" Foreground="#475569" FontSize="9" FontWeight="Bold" Margin="0,0,0,6"/>
+                                    <TextBox x:Name="DocDescriptionInput" Style="{StaticResource ModernTextBox}" Height="60" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,18"/>
+
+                                    <!-- Tags -->
+                                    <TextBlock Text="TAGS (COMMA SEPARATED)" Foreground="#475569" FontSize="9" FontWeight="Bold" Margin="0,0,0,6"/>
+                                    <TextBox x:Name="DocTagsInput" Style="{StaticResource ModernTextBox}"/>
+                                </StackPanel>
+
+                                <!-- Dialog Action Buttons -->
+                                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                                    <Button Content="Cancel" Style="{StaticResource SidebarButton}" Margin="0,0,12,0" Padding="15,5,15,5" Click="CloseImportDialog_Click"/>
+                                    <Button Content="Import Document" Style="{StaticResource GradientButton}" Click="SaveImportedDocument_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

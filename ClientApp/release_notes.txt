@@ -1,0 +1,4 @@
+﻿New Features in 1.1.0:
+- Added openXML reader for docx/pptx
+- Premium UI refinements
+- Checksum verifiers

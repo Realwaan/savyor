@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="SavyorApp/SavyorApp.csproj" />
+  <Project Path="SavyorLauncher/SavyorLauncher.csproj" />
+</Solution>
