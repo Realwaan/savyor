@@ -4,9 +4,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using SavyorApp.Models;
@@ -25,6 +27,8 @@ namespace SavyorApp
         private string _currentFilter = "All";
         private DocumentInfo? _selectedDoc = null;
         private string _tempSelectedFilePath = "";
+        private bool _isCatalogCorrupted = false;
+        private string _activeViewingDocId = "";
 
         public MainWindow()
         {
@@ -78,17 +82,35 @@ namespace SavyorApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to load documents catalog: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _isCatalogCorrupted = true;
+                MessageBox.Show($"Failed to load documents catalog: {ex.Message}\n\nSaving catalog is disabled to prevent overwriting/losing data.", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         private void SaveCatalog()
         {
+            if (_isCatalogCorrupted)
+            {
+                MessageBox.Show("Saving database catalog is disabled because the document vault failed to load correctly. Please verify the integrity of the data files.", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             try
             {
                 var catalog = new CatalogData { Documents = _documents };
                 string json = JsonSerializer.Serialize(catalog, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(CatalogPath, json);
+                
+                string tempPath = CatalogPath + ".tmp";
+                string backupPath = CatalogPath + ".bak";
+                
+                File.WriteAllText(tempPath, json);
+                
+                if (File.Exists(CatalogPath))
+                {
+                    File.Copy(CatalogPath, backupPath, true);
+                }
+                
+                File.Move(tempPath, CatalogPath, overwrite: true);
             }
             catch (Exception ex)
             {
@@ -228,7 +250,7 @@ namespace SavyorApp
             }
         }
 
-        private void SaveImportedDocument_Click(object sender, RoutedEventArgs e)
+        private async void SaveImportedDocument_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(_tempSelectedFilePath) || !File.Exists(_tempSelectedFilePath))
             {
@@ -244,14 +266,30 @@ namespace SavyorApp
 
             try
             {
+                SaveImportedDocumentButton.IsEnabled = false;
+                SaveImportedDocumentButton.Content = "Importing...";
+
                 string id = Guid.NewGuid().ToString("N");
                 string ext = Path.GetExtension(_tempSelectedFilePath);
-                string fileName = Path.GetFileName(_tempSelectedFilePath);
-                string destinationName = $"{id}_{fileName}";
+                string originalName = Path.GetFileNameWithoutExtension(_tempSelectedFilePath);
+
+                // Sanitize file name
+                foreach (char c in Path.GetInvalidFileNameChars())
+                {
+                    originalName = originalName.Replace(c, '_');
+                }
+
+                if (originalName.Length > 50)
+                {
+                    originalName = originalName.Substring(0, 50);
+                }
+
+                string destinationName = $"{id}_{originalName}{ext}";
                 string destinationPath = Path.Combine(FilesDir, destinationName);
 
-                // Copy file to vault
-                File.Copy(_tempSelectedFilePath, destinationPath, true);
+                // Copy file to vault asynchronously
+                string sourcePath = _tempSelectedFilePath;
+                await Task.Run(() => File.Copy(sourcePath, destinationPath, true));
 
                 // Extract size info
                 long sizeBytes = new FileInfo(destinationPath).Length;
@@ -292,6 +330,11 @@ namespace SavyorApp
             {
                 MessageBox.Show($"Failed to import document: {ex.Message}", "Import Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            finally
+            {
+                SaveImportedDocumentButton.IsEnabled = true;
+                SaveImportedDocumentButton.Content = "Import Document";
+            }
         }
 
         // ── Viewer Logic ───────────────────────────────────────────────
@@ -304,9 +347,10 @@ namespace SavyorApp
             }
         }
 
-        private void OpenDocumentViewer(DocumentInfo doc)
+        private async void OpenDocumentViewer(DocumentInfo doc)
         {
             _selectedDoc = doc;
+            _activeViewingDocId = doc.Id;
             string filePath = Path.Combine(FilesDir, doc.FileName);
 
             if (!File.Exists(filePath))
@@ -317,6 +361,36 @@ namespace SavyorApp
 
             ViewerDocTitle.Text = doc.Title;
             ViewerDocPath.Text = filePath;
+
+            // Update metadata sidebar
+            ViewerDocSize.Text = FormatBytes(doc.SizeBytes);
+            ViewerDocDate.Text = doc.DateAdded.ToString("MM/dd/yyyy hh:mm tt");
+            ViewerDocFormat.Text = doc.Extension.Replace(".", "").ToUpperInvariant() + " File";
+            ViewerDocDescription.Text = string.IsNullOrWhiteSpace(doc.Description) ? "No description provided." : doc.Description;
+
+            // Clear and rebuild tags panel
+            ViewerTagsPanel.Children.Clear();
+            foreach (var tag in doc.Tags)
+            {
+                var tagBorder = new Border
+                {
+                    Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1e293b")),
+                    CornerRadius = new CornerRadius(4),
+                    Padding = new Thickness(6, 3, 6, 3),
+                    Margin = new Thickness(0, 0, 6, 6)
+                };
+
+                var tagText = new TextBlock
+                {
+                    Text = tag,
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#94a3b8")),
+                    FontSize = 9,
+                    FontWeight = FontWeights.SemiBold
+                };
+
+                tagBorder.Child = tagText;
+                ViewerTagsPanel.Children.Add(tagBorder);
+            }
 
             // Reset previews
             ImagePreviewer.Visibility = Visibility.Collapsed;
@@ -341,18 +415,33 @@ namespace SavyorApp
                 }
                 else if (category == "text")
                 {
-                    TextViewerControl.Text = File.ReadAllText(filePath);
+                    TextViewerControl.Text = "Loading content...";
                     TextPreviewer.Visibility = Visibility.Visible;
+                    string text = await File.ReadAllTextAsync(filePath);
+                    if (_activeViewingDocId == doc.Id)
+                    {
+                        TextViewerControl.Text = text;
+                    }
                 }
                 else if (category == "docx")
                 {
-                    TextViewerControl.Text = DocxReader.ReadText(filePath);
+                    TextViewerControl.Text = "Parsing document content...";
                     TextPreviewer.Visibility = Visibility.Visible;
+                    string text = await Task.Run(() => DocxReader.ReadText(filePath));
+                    if (_activeViewingDocId == doc.Id)
+                    {
+                        TextViewerControl.Text = text;
+                    }
                 }
                 else if (category == "pptx")
                 {
-                    TextViewerControl.Text = PptxReader.ReadText(filePath);
+                    TextViewerControl.Text = "Parsing slide presentation...";
                     TextPreviewer.Visibility = Visibility.Visible;
+                    string text = await Task.Run(() => PptxReader.ReadText(filePath));
+                    if (_activeViewingDocId == doc.Id)
+                    {
+                        TextViewerControl.Text = text;
+                    }
                 }
                 else if (category == "pdf")
                 {
@@ -375,6 +464,7 @@ namespace SavyorApp
 
         private void CloseViewer_Click(object sender, RoutedEventArgs e)
         {
+            _activeViewingDocId = "";
             // Stop PDF playback or page loads by navigating away
             try
             {
@@ -504,6 +594,7 @@ namespace SavyorApp
                     SaveCatalog();
 
                     // Hide viewer and refresh display
+                    _activeViewingDocId = "";
                     ViewerOverlay.Visibility = Visibility.Collapsed;
                     _selectedDoc = null;
                     RefreshDisplay();

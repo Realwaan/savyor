@@ -3,8 +3,8 @@
   "launcher_version": "1.1.0",
   "download_url": "file:///F:/savyor/MockServer/SavyorApp_1.1.0.zip",
   "launcher_download_url": "file:///F:/savyor/MockServer/SavyorLauncher_1.1.0.zip",
-  "sha256": "60dd80f0ac7a069c9b9a3ef202f8becbc557a2e7f394a3e73379b03ce3b4db83",
-  "launcher_sha256": "4bd5cca9399d4c161ebf2442463c3da093ee8d2331dfa3f397d243d6db8ef0ee",
+  "sha256": "1bad2eaf93df78dc964a5cce5127f6173a1d17072134ba3a2e3e73493a44c64f",
+  "launcher_sha256": "cf0cc29beac19feac5b9dbe2ebafed018bafb7875463bca36426148e335be423",
   "required_files": [
     "SavyorApp.exe",
     "SavyorApp.dll",

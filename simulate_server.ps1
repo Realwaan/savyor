@@ -44,6 +44,7 @@ Copy-Item -Path "$BuildFolder\App\*" -Destination $AppStaging100 -Recurse -Force
 # Create empty placeholder document index
 New-Item -ItemType Directory -Path "$AppStaging100\documents" | Out-Null
 '{"documents":[]}' | Out-File -FilePath "$AppStaging100\documents\documents.json" -Encoding utf8 -Force
+Start-Sleep -Seconds 2
 Compress-Archive -Path "$AppStaging100\*" -DestinationPath "$MockServerFolder\SavyorApp_1.0.0.zip" -Force
 $AppHash100 = Get-FileSha256 "$MockServerFolder\SavyorApp_1.0.0.zip"
 
@@ -52,6 +53,7 @@ $AppStaging110 = "$BuildFolder\App_1.1.0"
 New-Item -ItemType Directory -Path $AppStaging110 | Out-Null
 Copy-Item -Path "$BuildFolder\App\*" -Destination $AppStaging110 -Recurse -Force
 "New Features in 1.1.0:`n- Added openXML reader for docx/pptx`n- Premium UI refinements`n- Checksum verifiers" | Out-File -FilePath "$AppStaging110\release_notes.txt" -Encoding utf8 -Force
+Start-Sleep -Seconds 2
 Compress-Archive -Path "$AppStaging110\*" -DestinationPath "$MockServerFolder\SavyorApp_1.1.0.zip" -Force
 $AppHash110 = Get-FileSha256 "$MockServerFolder\SavyorApp_1.1.0.zip"
 
@@ -62,6 +64,7 @@ New-Item -ItemType Directory -Path $LauncherStaging110 | Out-Null
 Copy-Item -Path "$BuildFolder\Launcher\*" -Destination $LauncherStaging110 -Recurse -Force
 # Add a dummy file inside launcher staging to prove self-update extracted successfully
 "Launcher Core Updated: v1.1.0" | Out-File -FilePath "$LauncherStaging110\launcher_changelog.txt" -Encoding utf8 -Force
+Start-Sleep -Seconds 2
 Compress-Archive -Path "$LauncherStaging110\*" -DestinationPath "$MockServerFolder\SavyorLauncher_1.1.0.zip" -Force
 $LauncherHash110 = Get-FileSha256 "$MockServerFolder\SavyorLauncher_1.1.0.zip"
 

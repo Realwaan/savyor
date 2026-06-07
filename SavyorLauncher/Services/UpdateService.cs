@@ -218,26 +218,31 @@ namespace SavyorLauncher.Services
             }
         }
 
-        public void GenerateLauncherSelfUpdateScript(string sourceDir, string targetDir, string currentExeName)
+        public void GenerateLauncherSelfUpdateScript(string sourceDir, string targetDir, string currentExeName, string newVersion)
         {
             string batPath = Path.Combine(targetDir, "update_launcher.bat");
             string batContent = $@"@echo off
 title Updating Savyor Launcher...
-echo Waiting for launcher to exit...
-:: Wait 2 seconds via ping
-ping 127.0.0.1 -n 3 > NUL
-echo Copying new launcher files from ""{sourceDir}"" to ""{targetDir}""...
-xcopy /y /e /q ""{sourceDir}\*"" ""{targetDir}\""
+echo Waiting for launcher to exit and releasing locks...
+
+set /a retry=1
+:retry_loop
+echo Attempt %retry% of 10 to copy updated launcher files...
+xcopy /y /e /q ""{sourceDir}\*"" ""{targetDir}\"" > nul 2>&1
 if errorlevel 1 (
-    echo Error copying files! Please run as administrator or close open processes.
-    pause
+    if %retry% lss 10 (
+        set /a retry+=1
+        ping 127.0.0.1 -n 2 > nul
+        goto retry_loop
+    )
+    echo [ERROR] Failed to copy update files after 10 attempts. > ""{targetDir}\update_error.log""
     exit /b 1
 )
+
 echo Cleaning up staging files...
 rmdir /s /q ""{sourceDir}""
 echo Restarting launcher...
-start """" ""{Path.Combine(targetDir, currentExeName)}"" --updated
-echo Done!
+start """" ""{Path.Combine(targetDir, currentExeName)}"" --updated {newVersion}
 del ""%~f0""
 ";
             File.WriteAllText(batPath, batContent);

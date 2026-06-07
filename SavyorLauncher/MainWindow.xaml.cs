@@ -21,6 +21,8 @@ namespace SavyorLauncher
 
         private readonly UpdateService _updateService;
         private readonly CancellationTokenSource _cts;
+        private bool _isExtractingApp = false;
+        private bool _preserveStaging = false;
 
         public MainWindow()
         {
@@ -145,11 +147,10 @@ namespace SavyorLauncher
                         SetStatus("Restarting Savyor Launcher...", 95);
                         await Task.Delay(800);
 
-                        localVer.LauncherVersion = manifest.LauncherVersion;
-                        _updateService.SaveLocalVersion(localVer);
-
                         string currentExeName = Path.GetFileName(Process.GetCurrentProcess().MainModule?.FileName ?? "SavyorLauncher.exe");
-                        _updateService.GenerateLauncherSelfUpdateScript(launcherExtractDir, AppBaseDir, currentExeName);
+                        _updateService.GenerateLauncherSelfUpdateScript(launcherExtractDir, AppBaseDir, currentExeName, manifest.LauncherVersion);
+
+                        _preserveStaging = true;
 
                         // Spawn batch file to replace files and restart
                         Process.Start(new ProcessStartInfo
@@ -234,22 +235,14 @@ namespace SavyorLauncher
                     catch { }
 
                     SetStatus("Extracting application components...", 90);
+                    _isExtractingApp = true;
                     await Task.Run(() => _updateService.ExtractZipSafely(appZipPath, AppBaseDir));
 
                     // Save new version configuration
                     localVer.Version = manifest.Version;
                     localVer.LauncherVersion = manifest.LauncherVersion;
                     _updateService.SaveLocalVersion(localVer);
-                }
-
-                // Clean up staging folder
-                if (Directory.Exists(StagingDir))
-                {
-                    try
-                    {
-                        Directory.Delete(StagingDir, true);
-                    }
-                    catch { }
+                    _isExtractingApp = false;
                 }
 
                 SetStatus("Launching Savyor App...", 100);
@@ -265,7 +258,26 @@ namespace SavyorLauncher
                 Console.WriteLine($"[ERROR] Startup exception: {ex.Message}\n{ex.StackTrace}");
                 SetStatus($"Startup error: {ex.Message}", 0);
                 MessageBox.Show($"Launcher Error: {ex.Message}\n{ex.StackTrace}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                VerifyAndLaunchExistingApp();
+                
+                if (_isExtractingApp)
+                {
+                    MessageBox.Show("The update was interrupted during file extraction. The application files may be corrupted. Please restart the launcher to repair the application.", "Update Interrupted", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                else
+                {
+                    VerifyAndLaunchExistingApp();
+                }
+            }
+            finally
+            {
+                if (!_preserveStaging && Directory.Exists(StagingDir))
+                {
+                    try
+                    {
+                        Directory.Delete(StagingDir, true);
+                    }
+                    catch { }
+                }
             }
         }
 
